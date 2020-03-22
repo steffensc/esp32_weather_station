@@ -1,4 +1,7 @@
 # ESP32 Micro controller
+I used VS Code PlatformIO for compiling and falshing software to the ESP32
+On some Systems you have to press and hold the Boot Button on the ESP32 dev board, otherwise connection for flashing may fail.
+
 ## Weather Sensor
 Hardware:
 - ESP32 Node MCU
