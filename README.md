@@ -40,4 +40,4 @@ The index.php displays the recorded data from the csv's.
 It automatically draws a swipable container for each sensor-specific csv file.
 
 ![Image of website_screenshot]
-(https://github.com/steffensc/esp32_weather_station/blob/master/website_screenshot.png)
+(https://raw.githubusercontent.com/steffensc/esp32_weather_station/master/website_screenshot.png)
