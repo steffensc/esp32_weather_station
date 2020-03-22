@@ -39,5 +39,5 @@ Furthermore there is a python script (calculate_day_hists.py) which calculates t
 The index.php displays the recorded data from the csv's.
 It automatically draws a swipable container for each sensor-specific csv file.
 
-![Image of Website screenshot](website_screenshot.png =25x)
+![Image of Website screenshot](website_screenshot.png)
 
