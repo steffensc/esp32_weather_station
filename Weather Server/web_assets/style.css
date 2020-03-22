@@ -1,0 +1,327 @@
+body{
+	margin: 0px;
+	padding: 0px;
+	min-width: 700px;
+
+	color: rgba(4, 35, 40, 0.90);
+	font-family: 'Open Sans', sans-serif;
+	font-size: 12.5pt;
+	font-weight: 400;
+	text-align: left;
+	-webkit-font-smoothing: antialiased;
+}
+body.darkmode{ 
+	color: rgba(255, 255, 255, 0.90) !important;
+	background-color: #383735;
+}
+
+
+.wrapper{
+	margin: auto;
+	width: 80%;
+	min-width: 700px;
+	max-width: 1100px;
+	position: relative;
+}
+.center{
+	text-align: center;
+}
+.shadow{
+	-webkit-box-shadow: 0px 0px 22px 0px rgba(100,100,100,0.1);
+	-moz-box-shadow: 0px 0px 22px 0px rgba(100,100,100,0.1);
+	box-shadow: 0px 0px 22px 0px rgba(100,100,100,0.1);
+}
+.darkmode .shadow{
+	-webkit-box-shadow: 0px 0px 22px 0px rgba(0,0,0,0.22);
+	-moz-box-shadow: 0px 0px 22px 0px rgba(0,0,0,0.22);
+	box-shadow: 0px 0px 22px 0px rgba(0,0,0,0.22);
+}
+.corner{
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+}
+.clickarea{
+	cursor: pointer; 
+	cursor: hand;
+}
+.button{
+	background-color: #cccccc3d;
+	transition: 1s background-color; /*animates for 1 second*/
+    -moz-transition: 1s background-color; /*For Firefox < 16.0*/
+    -webkit-transition: 1s background-color; /*For WebKit (Chrome, Safari)*/
+}
+.button:hover{
+	background-color: #cccccc77;
+	transition: 0.5s background-color; /*animates for 1 second*/
+    -moz-transition: 0.5s background-color; /*For Firefox < 16.0*/
+    -webkit-transition: 0.5s background-color; /*For WebKit (Chrome, Safari)*/
+}
+.button.active{
+	background-color: #cccccc13;
+	transition: 0.5s background-color; /*animates for 1 second*/
+    -moz-transition: 0.5s background-color; /*For Firefox < 16.0*/
+    -webkit-transition: 0.5s background-color; /*For WebKit (Chrome, Safari)*/
+}
+.verticalcenter{
+	position: relative;
+	top: 45%;
+	width: 100%;
+	-webkit-transform: translateY(-50%);
+	-ms-transform: translateY(-50%);
+	transform: translateY(-50%);
+}
+.spacer-small{
+	height: 35px;
+	display: block;
+}
+.spacer-medium{
+	height: 75px;
+	display: block;
+}
+.spacer-large{
+	height: 105px;
+	display: block;
+}
+.mobile-only{
+	display: none;
+}
+h1, h2, h3{
+	margin: 10px 0px;
+}
+h1{
+	font-size: 69px;
+	font-family: "Red Hat Text", sans-serif;
+	font-weight: 300;
+}
+h2{
+	font-size: 29px;
+	font-family: "Red Hat Text", sans-serif;
+	font-weight: 400;
+}
+h3{
+	font-size: 20px;
+	font-family: "Red Hat Text", sans-serif;
+	font-weight: 400;
+}
+p{
+	line-height: 24px;
+}
+a{
+	color: rgba(4, 35, 40, 0.90);
+}
+.darkmode a{
+	color: rgba(255, 255, 255, 0.90);
+}
+.darkmode img{
+	opacity: 0.9;
+}
+.controlbutton{
+	background-color: rgba(128, 128, 128, 0.50); 
+	padding: 5px 11px;
+	z-index: 100;
+	color: rgba(255, 255, 255, 0.90);
+}
+#darkmode_button.controlbutton{
+	position: absolute;
+	right: 10px; 
+	top: 10px;
+}
+.darkmode .controlbutton{
+	color: rgba(25, 25, 25, 0.90);
+}
+#content{
+	height: 100vh;
+	margin: 0px 0px;
+	overflow: hidden;
+}
+
+
+/* - - - - - - - - - */
+.mainview h1{
+    margin-right: 10px;
+}
+.mainview h1 span{
+    position: absolute;
+}
+.mainview h2{
+    display: inline-block;
+    width: 40%;
+}
+.mainview h3{
+    margin: 0px;
+}
+.mainview p{
+    font-size: 15px;
+    margin: 0px;
+    margin-bottom: 27px;
+}
+
+.chart{
+    position: relative;
+    overflow: hidden;
+}
+.chart .ct-chart-plot.second{
+   margin-top: -155px;
+}
+.chart .ct-point{
+    font-size: 150px;
+}
+.chart .ct-label{
+    font-family: "Red Hat Text", sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    fill: rgba(4, 35, 40, 0.90);
+}
+body.darkmode .chart .ct-label{ 
+    fill: rgba(255, 255, 255, 0.90);
+}
+.chart .ct-series.temperature .ct-line{
+    stroke: rgba(4, 35, 40, 0.90);
+    stroke-width: 1.5px;
+}
+body.darkmode .chart .ct-series.temperature .ct-line{
+    stroke: rgba(255, 255, 255, 0.90);
+}
+
+.chart .ct-series.humidity .ct-label{
+    fill: rgba(4, 35, 40, 0.20);
+}
+body.darkmode .chart .ct-series.humidity .ct-label{
+    fill: rgba(255, 255, 255, 0.45);
+}
+.chart .ct-series.humidity .ct-area{
+    fill: rgba(4, 35, 40, 0.99);
+}
+body.darkmode .chart .ct-series.humidity .ct-area{
+    fill: rgba(255, 255, 255, 0.99);
+}
+.chart .ct-series text{
+    display: none;
+}
+.chart .chart-hours-4 .ct-series text:nth-child(5n){
+    display: initial;
+}
+.chart .chart-hours-12 .ct-series text:nth-child(15n){
+    display: initial;
+}
+.chart .chart-hours-24 .ct-series text:nth-child(31n){
+    display: initial;
+}
+.chart .ct-series text.ct-label:first-of-type,
+.chart .ct-series text.ct-label:last-of-type,
+{
+    display: none;
+}
+
+.day.container{
+    margin-top: -10px;
+}
+.temps td p, .humis td p{
+    font-size: 15px;
+    margin: 0px;
+    height: 15px;
+}
+.temps td span, .humis td span{
+    font-size: 10px;
+}
+.temps td span:first-of-type, .humis td span:first-of-type{
+    margin-right: 1px;
+}
+.temps td span:last-of-type, .humis td span:last-of-type{
+    margin-left: 1px;
+}
+
+.chart-selection{
+    position: relative;
+    margin-top: 40px;
+}
+.chart-selection ul{
+    margin: 0px;
+    padding: 0px;
+}
+.chart-selection ul li{ 
+    display: inline-block;
+}
+.chart-selection ul li a.button{
+    display: block;
+    width: 55px;
+    margin: 0px 5px;
+    font-size: 14px;
+    padding: 2px 0px;
+    text-decoration: none;
+}
+
+.swiper-container {
+    width: 100%;
+    height: 100vh;
+}
+.swiper-slide{
+    min-height: 100vh;
+    overflow-y: scroll;
+}
+.swiper-button-next, .swiper-button-prev{
+    color: rgba(4, 35, 40, 0.90);
+}
+body.darkmode .swiper-button-next, body.darkmode .swiper-button-prev{
+    color: rgba(255, 255, 255, 0.90);
+}
+.swiper-button-next.swiper-button-disabled, .swiper-button-prev.swiper-button-disabled{
+    color: rgba(4, 35, 40, 0.45);
+}
+body.darkmode .swiper-button-next.swiper-button-disabled, body.darkmode .swiper-button-prev.swiper-button-disabled{
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.notifications{
+    margin-top: 100vh;
+    position: absolute;
+    margin-bottom: 100px;
+}
+.notifications table{
+    width: 100%;
+}
+.notifications table td{
+    width: auto;
+}
+.notifications td.date-time{
+    font-size: 13px;
+}
+.notifications td.text{
+    width: 100%;
+    padding: 0px 15px;
+}
+.notifications td.last{
+    font-size: 27px;
+    text-align: right;
+}
+/* - - - - - - - - - */
+
+
+
+
+@media only screen and (max-device-width: 600px) {
+	body{
+		min-width: 300px;
+	}
+	.wrapper{
+		width: initial;
+		max-width: initial !important;
+		min-width: initial !important;
+	}
+	.mobile-only{
+		display: inherit !important;
+	}
+	.desktop-only{
+		display: none !important;
+	}
+
+	.verticalcenter{
+		top: 34px;
+
+		-webkit-transform: initial;
+    	-ms-transform: initial;
+    	transform: initial;
+	}
+
+}

@@ -1,0 +1,1 @@
+15 0 * * * cd /path/to/pythonfile/ ; python3 calculate_day_hists.py
