@@ -38,3 +38,6 @@ Furthermore there is a python script (calculate_day_hists.py) which calculates t
 ### Display
 The index.php displays the recorded data from the csv's.
 It automatically draws a swipable container for each sensor-specific csv file.
+
+![Screenshot of the mobile Website]
+(https://github.com/steffensc/esp32_weather_station/blob/master/website_screenshot.png)
