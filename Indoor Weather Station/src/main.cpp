@@ -1,7 +1,10 @@
 #define USE_CCS811 true
 #define USE_OLED false
 
+
+
 #define BME_ADDRESS 0x76
+#define CCS811_ADDRESS 0x5A
 
 #define SSD_ADDRESS 0x3C
 #define SCREEN_WIDTH 128
@@ -143,6 +146,7 @@ boolean connectWifi(const char *ssid , const char *password, int interval, int m
   }
 }
 
+
 boolean sendSensorData() {
   if ((WiFi.status() == WL_CONNECTED))
   {
@@ -259,7 +263,7 @@ void setup() {
 
   // ENVIRONMENT CCS //
   #if (USE_CCS811)
-  if(!ccs.begin(0x5A)){
+  if(!ccs.begin(CCS811_ADDRESS)){
     Serial.println("Failed to start sensor! Please check your wiring.");
     while(1);
   }
