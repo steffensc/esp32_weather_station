@@ -8,6 +8,8 @@
 #include <WiFiUdp.h>
 #include <HTTPClient.h>
 
+#include <config.h>
+
 
 #define BME_ADDRESS 0x76
 
@@ -24,8 +26,8 @@ RTC_DATA_ATTR int bootCount = 0;
 Adafruit_BME280 bme;
 
 
-const char *ssid = "Wifi SSID";
-const char *password = "WiFiPassword";
+const char *ssid = WIFI_SSID;
+const char *password = WIFI_PASSWORD;
 boolean wifi_error_state = false;
 
 String apiEndpoint = "http://your.url.to.webserver/write_data.php";
