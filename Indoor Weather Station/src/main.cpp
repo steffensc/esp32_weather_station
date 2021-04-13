@@ -1,16 +1,5 @@
-#include <Arduino.h>
-
-#include <Wire.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BME280.h>
-
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-
-#include <WiFi.h>
-#include <WiFiUdp.h>
-#include <HTTPClient.h>
-
+#define USE_CCS811 true
+#define USE_OLED false
 
 #define BME_ADDRESS 0x76
 
@@ -19,7 +8,7 @@
 #define SCREEN_HEIGHT 32
 #define DISPLAY_ON_TIME 7500
 
-#define TOUCH_PIN_THROSHOLD 40 /* Greater the value, more the sensitivity */
+#define TOUCH_PIN_THROSHOLD 40 // The greater the value, the more the sensitivity
 
 #define WIFI_CONN_CHECK_INTERVAL 1000
 #define WIFI_CONN_MAX_CHECK_COUNT 5
@@ -28,28 +17,63 @@
 #define TIME_TO_SLEEP 300       // Time ESP32 will go to sleep (in seconds)
 
 
-RTC_DATA_ATTR int bootCount = 0;
+// INCLUDES
+#include <Arduino.h>
+
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
+
+#if (USE_CCS811)
+#include "Adafruit_CCS811.h"
+#endif
+#if (USE_OLED)
+#include <Adafruit_GFX.h>
+#endif
+#include <Adafruit_SSD1306.h>
+
+#include <WiFi.h>
+#include <WiFiUdp.h>
+#include <HTTPClient.h>
+
+#include <config.h>
 
 
-Adafruit_BME280 bme;
-Adafruit_SSD1306 display;
+// CONFIGURATION VARS
+const char *ssid = WIFI_SSID;
+const char *password = WIFI_PASSWORD;
 
-
-const char *ssid = "Wifi SSID";
-const char *password = "WiFiPassword";
-boolean wifi_error_state = false;
-
-String apiEndpoint = "http://your.url.to.webserver/write_data.php";
-String apiToken = "setyourowntokenstring";
-String sensorNo = "0"; // Watch out for keeping this unique
+String apiEndpoint = SERVER_URL;
+String apiToken = SERVER_TOKEN;
+String sensorNo = SENSOR_NO; // Watch out for keeping this unique
 
 float temperature_correction = -0.5;
 float pressure_correction = 0;
 float humidity_correction = 0;
 
+
+// GLOBAL VARS
+Adafruit_BME280 bme;
+#if (USE_OLED)
+Adafruit_SSD1306 display;
+#endif
+#if (USE_CCS811)
+Adafruit_CCS811 ccs;
+#endif
+
+
 float temperature;
 float pressure;
 float humidity;
+
+#if (USE_CCS811)
+float eCO2;
+float TVOC;
+#endif
+
+RTC_DATA_ATTR int bootCount = 0;
+boolean wifi_error_state = false;
+
 
 
 /* - - - - - - METHODS - - - - - - */
@@ -58,22 +82,42 @@ void environment_measurement(int measurements, int delay_time) {
   float avg_pressure = 0;
   float avg_humidity = 0;
 
+  #if (USE_CCS811)
+  float avg_eCO2 = 0;
+  float avg_TVOC = 0;
+  ccs.setTempOffset(bme.readTemperature()); // set Temperature offset via bme Temperature
+  #endif
+
+
   for (int i = 0; i < measurements; i++)
   {
     avg_temperature = avg_temperature + bme.readTemperature();
     avg_pressure = avg_pressure + bme.readPressure() / 100;
     avg_humidity = avg_humidity + bme.readHumidity();
+
+    #if (USE_CCS811)
+    avg_eCO2 = avg_eCO2 + ccs.geteCO2();
+    avg_TVOC = avg_TVOC + ccs.getTVOC();
+    #endif
+
     delay(delay_time);
   }
 
   temperature = (avg_temperature / measurements) + temperature_correction;
   pressure = (avg_pressure / measurements) + pressure_correction;
   humidity = (avg_humidity / measurements) + humidity_correction;
+
+  #if (USE_CCS811)
+  eCO2 = (avg_eCO2 / measurements);
+  TVOC = (avg_TVOC / measurements);
+  #endif
 }
 
 boolean connectWifi(const char *ssid , const char *password, int interval, int max_con_count) {
   // Try to connect
   Serial.println("Connecting to wifi...");
+  Serial.println(ssid);
+  Serial.println(password);
   WiFi.begin(ssid, password);
 
   int wifiConnCheckCount = 0;
@@ -81,7 +125,9 @@ boolean connectWifi(const char *ssid , const char *password, int interval, int m
   {
     delay(interval);
     wifiConnCheckCount++;
+    Serial.print(".");
   }
+  Serial.println();
 
   // Check if connected
   if (WiFi.status() != WL_CONNECTED)
@@ -112,6 +158,12 @@ boolean sendSensorData() {
     htmlapirequest += "temperature=" + String(temperature) + "&";
     htmlapirequest += "humidity=" + String(humidity) + "&";
     htmlapirequest += "pressure=" + String(pressure);
+    #if (USE_CCS811)
+    htmlapirequest += "&eco=" + String(eCO2) + "&";
+    htmlapirequest +=  "tvoc=" + String(TVOC);
+    #endif
+
+    Serial.println(htmlapirequest);
 
     // Post json
     http.addHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -136,6 +188,7 @@ boolean sendSensorData() {
   return false;
 }
 
+#if (USE_OLED)
 void displaySensorData(int displaytime) {
   Serial.println("Display Sensor Data");
 
@@ -172,6 +225,7 @@ void displaySensorData(int displaytime) {
   display.clearDisplay();
   display.display();
 }
+#endif
 
 void callback(){
   //placeholder callback function
@@ -202,10 +256,26 @@ void setup() {
       ;
   }
 
+
+  // ENVIRONMENT CCS //
+  #if (USE_CCS811)
+  if(!ccs.begin(0x5A)){
+    Serial.println("Failed to start sensor! Please check your wiring.");
+    while(1);
+  }
+  
+  //calibrate temperature sensor
+  while(!ccs.available());
+  float temp = ccs.calculateTemperature();
+  ccs.setTempOffset(temp - 25.0);
+  #endif
+
+
   // DISPLAY //
+  #if (USE_OLED)
   display = Adafruit_SSD1306(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
   display.begin(SSD1306_SWITCHCAPVCC, SSD_ADDRESS);
-
+  
   // Display splash screen
   if(bootCount < 2){
     display.display();
@@ -217,6 +287,8 @@ void setup() {
 
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
+  #endif
+
 
   // Start WiFi
   wifi_error_state = connectWifi(ssid, password, WIFI_CONN_CHECK_INTERVAL, WIFI_CONN_MAX_CHECK_COUNT);
@@ -231,10 +303,12 @@ void loop() {
 
   sendSensorData();
 
+  #if (USE_OLED)
   if(esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TOUCHPAD)
   {
     displaySensorData(DISPLAY_ON_TIME);
   }
+  #endif
 
   esp_deep_sleep_start();  
 }
