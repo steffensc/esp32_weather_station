@@ -3,8 +3,8 @@
 
 
 
-#define BME_ADDRESS 0x76
-#define CCS811_ADDRESS 0x5A
+#define BME_ADDRESS_USE 0x76
+#define CCS811_ADDRESS_USE 0x5A
 
 #define SSD_ADDRESS 0x3C
 #define SCREEN_WIDTH 128
@@ -28,11 +28,13 @@
 #include <Adafruit_BME280.h>
 
 #if (USE_CCS811)
-#include "Adafruit_CCS811.h"
+#include "ccs811.h"
 #endif
+
 #if (USE_OLED)
 #include <Adafruit_GFX.h>
 #endif
+
 #include <Adafruit_SSD1306.h>
 
 #include <WiFi.h>
@@ -60,8 +62,9 @@ Adafruit_BME280 bme;
 #if (USE_OLED)
 Adafruit_SSD1306 display;
 #endif
+
 #if (USE_CCS811)
-Adafruit_CCS811 ccs;
+CCS811 ccs811; 
 #endif
 
 
@@ -80,27 +83,52 @@ boolean wifi_error_state = false;
 
 
 /* - - - - - - METHODS - - - - - - */
+uint16_t convert_to_ccs811_envformat(float value) {
+  uint16_t hi_part = trunc(value);
+  hi_part = hi_part & 0x007f; // "cut off first 9 bits (set them to 0) for having a 7 bit uinteger"
+  hi_part = hi_part << 9; // shifting 9 bits (adding 9 0-bits to the right)
+
+  float fraction_part = (value - trunc(value));
+  uint16_t lo_part = uint16_t(512 * fraction_part); // get 9bit fraction
+  lo_part = lo_part & 0x01ff; // "cut off first 7 bits (set them to 0) for having a 7 bit uinteger"
+
+  uint16_t result = hi_part | lo_part;
+
+  return result;
+}
+
+
 void environment_measurement(int measurements, int delay_time) {
   float avg_temperature = 0;
   float avg_pressure = 0;
   float avg_humidity = 0;
+  float temp, pres, humi;
 
   #if (USE_CCS811)
   float avg_eCO2 = 0;
   float avg_TVOC = 0;
-  ccs.setTempOffset(bme.readTemperature()); // set Temperature offset via bme Temperature
+  uint16_t eco2, etvoc, errstat, raw;
   #endif
 
 
   for (int i = 0; i < measurements; i++)
   {
-    avg_temperature = avg_temperature + bme.readTemperature();
-    avg_pressure = avg_pressure + bme.readPressure() / 100;
-    avg_humidity = avg_humidity + bme.readHumidity();
+    temp = bme.readTemperature();
+    pres = bme.readPressure() / 100;;
+    humi = bme.readHumidity();
+
+    avg_temperature = avg_temperature + temp;
+    avg_pressure = avg_pressure + pres;
+    avg_humidity = avg_humidity + humi;
+
+    delay(100);
 
     #if (USE_CCS811)
-    avg_eCO2 = avg_eCO2 + ccs.geteCO2();
-    avg_TVOC = avg_TVOC + ccs.getTVOC();
+    ccs811.set_envdata210(convert_to_ccs811_envformat(temp), convert_to_ccs811_envformat(humi));
+
+    ccs811.read(&eco2,&etvoc,&errstat,&raw); 
+    avg_eCO2 = avg_eCO2 + eco2;
+    avg_TVOC = avg_TVOC + etvoc;
     #endif
 
     delay(delay_time);
@@ -113,6 +141,8 @@ void environment_measurement(int measurements, int delay_time) {
   #if (USE_CCS811)
   eCO2 = (avg_eCO2 / measurements);
   TVOC = (avg_TVOC / measurements);
+  Serial.println(eCO2);
+  Serial.println(TVOC);
   #endif
 }
 
@@ -192,6 +222,7 @@ boolean sendSensorData() {
   return false;
 }
 
+
 #if (USE_OLED)
 void displaySensorData(int displaytime) {
   Serial.println("Display Sensor Data");
@@ -252,26 +283,26 @@ void setup() {
 
 
   // TEMPERATURE BME //
-  int bme_status = bme.begin(BME_ADDRESS);
+  int bme_status = bme.begin(BME_ADDRESS_USE);
   if (!bme_status)
   {
     Serial.println("Could not find BME280!");
-    while (1)
-      ;
+    while (1);
   }
 
 
   // ENVIRONMENT CCS //
   #if (USE_CCS811)
-  if(!ccs.begin(CCS811_ADDRESS)){
-    Serial.println("Failed to start sensor! Please check your wiring.");
-    while(1);
+  Wire.begin();
+  ccs811.set_i2cdelay(50); // Needed for ESP8266 because it doesn't handle I2C clock stretch correctly
+  // Enable CCS811
+  if( !ccs811.begin() ){
+    Serial.println("setup: CCS811 begin FAILED");
   }
-  
-  //calibrate temperature sensor
-  while(!ccs.available());
-  float temp = ccs.calculateTemperature();
-  ccs.setTempOffset(temp - 25.0);
+  // Start measuring
+  if( !ccs811.start(CCS811_MODE_1SEC) ){
+    Serial.println("setup: CCS811 start FAILED");
+  }
   #endif
 
 
