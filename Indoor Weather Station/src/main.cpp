@@ -107,6 +107,7 @@ void environment_measurement(int measurements, int delay_time) {
   #if (USE_CCS811)
   float avg_eCO2 = 0;
   float avg_TVOC = 0;
+  int ccs811_measurements = 0;
   uint16_t eco2, etvoc, errstat, raw;
   #endif
 
@@ -124,11 +125,14 @@ void environment_measurement(int measurements, int delay_time) {
     delay(100);
 
     #if (USE_CCS811)
-    ccs811.set_envdata210(convert_to_ccs811_envformat(temp), convert_to_ccs811_envformat(humi));
+    ccs811.set_envdata(convert_to_ccs811_envformat(temp), convert_to_ccs811_envformat(humi));
 
     ccs811.read(&eco2,&etvoc,&errstat,&raw); 
-    avg_eCO2 = avg_eCO2 + eco2;
-    avg_TVOC = avg_TVOC + etvoc;
+    if( errstat==CCS811_ERRSTAT_OK ) { 
+      avg_eCO2 = avg_eCO2 + eco2;
+      avg_TVOC = avg_TVOC + etvoc;
+      ccs811_measurements += 1;
+    }
     #endif
 
     delay(delay_time);
@@ -139,8 +143,14 @@ void environment_measurement(int measurements, int delay_time) {
   humidity = (avg_humidity / measurements) + humidity_correction;
 
   #if (USE_CCS811)
-  eCO2 = (avg_eCO2 / measurements);
-  TVOC = (avg_TVOC / measurements);
+  if (ccs811_measurements > 0){
+    eCO2 = (avg_eCO2 / ccs811_measurements);
+    TVOC = (avg_TVOC / ccs811_measurements);
+  }
+  else{
+    eCO2 = 0;
+    TVOC = 0;
+  }
   Serial.println(eCO2);
   Serial.println(TVOC);
   #endif
